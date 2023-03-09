@@ -2,6 +2,59 @@ const inquirer = require("inquirer");
 const fs = require("fs");
 
 
+class Department {
+
+    constructor(id, name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    printInfo() {
+        console.log(`New Department: ID is ${this.id} and Name is ${this.name}`);
+    }
+
+}
+
+class Role {
+
+    constructor(id, title, department, salary) {
+        this.id = id;
+        this.title = title;
+        this.department = department;
+        this.salary = salary;
+    }
+
+    printInfo() {
+        console.log(`New Role: ID is ${this.id}, Title is ${this.title}, Department is ${this.department} and Salary is ${this.salary}`);
+    }
+
+}
+
+
+
+class Employee {
+
+    constructor(id, first_name, last_name, title, department, salary, manager) {
+        this.id = id;
+        this.first_name = first_name;
+        this.last_name = last_name;
+        this.title = title;
+        this.department = department;
+        this.salary = salary;
+        this.manager = manager;
+    }
+
+    printInfo() {
+        console.log(`New Role: ID is ${this.id},First Name is ${this.first_name}, Last Name is ${this.last_name}, Title is ${this.title}, Department is ${this.department}, Salary is ${this.salary} and Manager is ${this.manager}`);
+    }
+
+}
+
+const department = Department();
+const role = Roles();
+const employee = Employee;
+
+
 const newDepartmentList = [];
 const newRoleList = [];
 const newManagerList = [];
