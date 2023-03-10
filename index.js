@@ -1,63 +1,27 @@
 const inquirer = require("inquirer");
-const fs = require("fs");
-
-
-class Department {
-
-    constructor(id, name) {
-        this.id = id;
-        this.name = name;
-    }
-
-    printInfo() {
-        console.log(`New Department: ID is ${this.id} and Name is ${this.name}`);
-    }
-
-}
-
-class Role {
-
-    constructor(id, title, department, salary) {
-        this.id = id;
-        this.title = title;
-        this.department = department;
-        this.salary = salary;
-    }
-
-    printInfo() {
-        console.log(`New Role: ID is ${this.id}, Title is ${this.title}, Department is ${this.department} and Salary is ${this.salary}`);
-    }
-
-}
+const mysql = require('mysql2');
+const CTable = require("console.table");
 
 
 
-class Employee {
+// connect to database
+const db = mysql.createConnection(
+    {
+        host: 'localhost',
+        // MySQL username,
+        user: 'root',
+        // MySQL password
+        password: 'codingbootcamp',
+        database: 'company_db'
+    },
+    console.log(`Connected to the company_db database.`)
+);
 
-    constructor(id, first_name, last_name, title, department, salary, manager) {
-        this.id = id;
-        this.first_name = first_name;
-        this.last_name = last_name;
-        this.title = title;
-        this.department = department;
-        this.salary = salary;
-        this.manager = manager;
-    }
-
-    printInfo() {
-        console.log(`New Role: ID is ${this.id},First Name is ${this.first_name}, Last Name is ${this.last_name}, Title is ${this.title}, Department is ${this.department}, Salary is ${this.salary} and Manager is ${this.manager}`);
-    }
-
-}
-
-const department = Department();
-const role = Roles();
-const employee = Employee;
 
 
 const newDepartmentList = [];
 const newRoleList = [];
-const newManagerList = [];
+const newEmployeeList = [];
 
 const initialQuestion = [
     {
@@ -101,7 +65,7 @@ const addRoleQuestion = [
     {
         type: 'list',
         message: "Which department does the role belong to?",
-        choices: ["Engineering", "Finances", "Legal", "Sales", newDepartmentList],
+        choices: db.query["Engineering", "Finances", "Legal", "Sales", newDepartmentList],
         name: 'role_department',
 
     }
@@ -138,7 +102,7 @@ const addEmployeeQuestion = [
     {
         type: 'list',
         message: "Who is the employee's manager?",
-        choices: ["John Doe", "Mike Chan", "Ashley Rodriguez", "Kevin Tupik", "Accountant", "Kunal Singh", "Malia Brown", newManagerList],
+        choices: ["John Doe", "Mike Chan", "Ashley Rodriguez", "Kevin Tupik", "Accountant", "Kunal Singh", "Malia Brown", newEmployeeList],
         name: 'employee_manager',
 
     }
@@ -150,7 +114,7 @@ const updateEmployeeRole = [
     {
         type: 'list',
         message: "Which employee's role do you want to update?",
-        choices: ["John Doe", "Mike Chan", "Ashley Rodriguez", "Kevin Tupik", "Accountant", "Kunal Singh", "Malia Brown", newManagerList],
+        choices: ["John Doe", "Mike Chan", "Ashley Rodriguez", "Kevin Tupik", "Accountant", "Kunal Singh", "Malia Brown", newEmployeeList],
         name: 'update_employee',
     },
 
@@ -166,27 +130,162 @@ const updateEmployeeRole = [
 
 
 
-// function writeToFile(file, data) {
-
-//     fs.writeFile(file, generatePage(data), (err) =>
-//         err ? console.log(err) : console.log('Success'));
-
-// };
-
 
 function init() {
+
+    repeatedQuestion();
+
+};
+
+function repeatedQuestion() {
+
     inquirer.prompt(initialQuestion)
         .then(response => {
             console.log(response);
-            // const manager = new Manager(
-            //     response.manager_name,
-            //     response.manager_id,
-            //     response.manager_email,
-            //      response.manager_officeNumber);
-            // employeeArray.push(manager)
 
 
-            // repeatTeamQuestion();
+            if (response.initial_question == 'Add Department') {
+                inquirer.prompt(addDepartmentQuestion)
+                    .then(response => {
+
+                        const department = new Department(
+                            response.department_name);
+                        newDepartmentList.push(department);
+                        console.log(newDepartmentList);
+
+                        //Query database
+                        db.query('INSERT INTO departments (name) VALUES (?)', response.department_name, function (err, results) {
+                            if (err) {
+                                console.log(err);
+                            }
+                            console.log(results);
+                        });
+
+
+                        repeatedQuestion();
+
+                    });
+
+            } else if (response.initial_question == 'Add Roles') {
+
+                db.query('SELECT id AS value, name FROM departments').then()
+
+
+                inquirer.prompt(addRoleQuestion)
+                    .then(response => {
+
+                        const role = new Role(
+                            response.role_name,
+                            response.role_salary,
+                            response.role_department);
+                        newRoleList.push(role);
+
+                        //Query database
+                        db.query(`INSERT INTO roles(title,salary ) VALUES (${response.role_name}, ${response.role_salary}), `, function (err, results) {
+                            if (err) {
+                                console.log(err);
+                            }
+                            console.log(results);
+                        });
+
+
+                        repeatedQuestion();
+                    });
+
+
+
+
+            } else if (response.initial_question == 'Add Employee') {
+
+                inquirer.prompt(addEmployeeQuestion)
+                    .then(response => {
+
+                        const employee = new Employee(
+                            response.employee_first_name,
+                            response.employee_last_name,
+                            response.employee_role,
+                            response.employee_manager);
+                        newEmployeeList.push(employee);
+
+
+                        //Query database
+                        db.query(`INSERT INTO roles(first_name,last_name ) VALUES (${response.employee_first_name}, ${response.employee_last_name}, ), `, function (err, results) {
+                            if (err) {
+                                console.log(err);
+                            }
+                            console.log(results);
+                        });
+
+
+
+
+                        repeatedQuestion();
+                    });
+
+
+            } else if (response.initial_question == 'Update Employee Role') {
+
+
+
+                repeatedQuestion();
+
+            } else if (response.initial_question == 'View All Departments') {
+
+                //Query database
+                db.query(`SELECT * FROM departments) `, function (err, results) {
+                    if (err) {
+                        console.log(err);
+                    }
+                    console.log(results);
+                });
+
+
+                repeatedQuestion();
+
+
+
+            } else if (response.initial_question == 'View All Roles') {
+
+
+
+                //Query database
+                db.query(`SELECT * FROM roles) `, function (err, results) {
+                    if (err) {
+                        console.log(err);
+                    }
+                    console.log(results);
+                });
+
+
+                repeatedQuestion();
+
+
+            } else if (response.initial_question == 'View All Employees') {
+
+
+                //Query database
+                db.query(`SELECT * FROM employees) `, function (err, results) {
+
+                    if (err) {
+                        console.log(err);
+                    }
+                    console.log(results);
+                });
+
+                repeatedQuestion();
+
+            } else if (response.initial_question == 'Quit') {
+
+
+                return;
+
+
+                //                 console.log(employeeArray.length);
+                //                 writeToFile("./dist/index.html", employeeArray);
+
+            }
+
+
 
 
         })
@@ -197,49 +296,4 @@ function init() {
 
 init();
 
-// function repeatTeamQuestion() {
 
-//     inquirer.prompt(teamQuestion)
-//         .then(response => {
-//             console.log(response);
-
-
-//             if (response.team_member == "Engineer") {
-
-//                 inquirer.prompt(engineerQuestions)
-//                     .then(response => {
-//                         const engineer = new Engineer(
-//                             response.engineer_name,
-//                             response.engineer_id,
-//                             response.engineer_email,
-//                             response.engineer_github);
-//                         employeeArray.push(engineer)
-
-
-//                         repeatTeamQuestion();
-//                     })
-//             } else if (response.team_member == "Intern") {
-//                 inquirer.prompt(internQuestions)
-//                     .then(response => {
-//                         const intern = new Intern(
-//                             response.intern_name,
-//                             response.intern_id,
-//                             response.intern_email,
-//                             response.intern_school);
-//                         employeeArray.push(intern);
-
-//                         repeatTeamQuestion();
-//                     })
-//             } else {
-//                 console.log(employeeArray);
-//                 console.log(employeeArray.length);
-//                 writeToFile("./dist/index.html", employeeArray);
-
-//                 return;
-//             }
-
-
-
-//         })
-
-// }
