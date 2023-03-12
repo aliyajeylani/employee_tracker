@@ -1,6 +1,7 @@
+const { response } = require("express");
 const inquirer = require("inquirer");
 const mysql = require('mysql2');
-const CTable = require("console.table");
+// const CTable = require("console.table");
 
 
 
@@ -19,15 +20,11 @@ const db = mysql.createConnection(
 
 
 
-const newDepartmentList = [];
-const newRoleList = [];
-const newEmployeeList = [];
-
 const initialQuestion = [
     {
         type: 'list',
         message: "What would you like to do?",
-        choices: ["Add Employee", "Update Employee Role", "View All Roles", "Add Roles", "View All Departments", "Add Department", "Quit", "View All Employees"],
+        choices: ["Add Employee", "Update Employee Role", "View All Roles", "Add Role", "View All Departments", "Add Department", "Quit", "View All Employees"],
         name: 'initial_question',
 
     }
@@ -65,7 +62,7 @@ const addRoleQuestion = [
     {
         type: 'list',
         message: "Which department does the role belong to?",
-        choices: db.query["Engineering", "Finances", "Legal", "Sales", newDepartmentList],
+        choices: ["Engineering", "Finances", "Legal", "Sales"],
         name: 'role_department',
 
     }
@@ -94,7 +91,7 @@ const addEmployeeQuestion = [
     {
         type: 'list',
         message: "What is the employee's role?",
-        choices: ["Salesperson", "Lead Engineer", "Software Engineer", "Account Manager", "Accountant", "Legal Team Lead", "Lawyer", "Sales Lead", newRoleList],
+        choices: ["Salesperson", "Lead Engineer", "Software Engineer", "Account Manager", "Accountant", "Legal Team Lead", "Lawyer", "Sales Lead"],
         name: 'employee_role',
 
     },
@@ -102,7 +99,7 @@ const addEmployeeQuestion = [
     {
         type: 'list',
         message: "Who is the employee's manager?",
-        choices: ["John Doe", "Mike Chan", "Ashley Rodriguez", "Kevin Tupik", "Accountant", "Kunal Singh", "Malia Brown", newEmployeeList],
+        choices: ["John Doe", "Mike Chan", "Ashley Rodriguez", "Kevin Tupik", "Accountant", "Kunal Singh", "Malia Brown"],
         name: 'employee_manager',
 
     }
@@ -114,14 +111,14 @@ const updateEmployeeRole = [
     {
         type: 'list',
         message: "Which employee's role do you want to update?",
-        choices: ["John Doe", "Mike Chan", "Ashley Rodriguez", "Kevin Tupik", "Accountant", "Kunal Singh", "Malia Brown", newEmployeeList],
+        choices: ["John Doe", "Mike Chan", "Ashley Rodriguez", "Kevin Tupik", "Accountant", "Kunal Singh", "Malia Brown"],
         name: 'update_employee',
     },
 
     {
         type: 'list',
         message: "Which role do you want to assign the selected employee?",
-        choices: ["Salesperson", "Lead Engineer", "Software Engineer", "Account Manager", "Accountant", "Legal Team Lead", "Lawyer", "Sales Lead", newRoleList],
+        choices: ["Salesperson", "Lead Engineer", "Software Engineer", "Account Manager", "Accountant", "Legal Team Lead", "Lawyer", "Sales Lead"],
         name: 'update_employee_role',
     },
 
@@ -139,160 +136,185 @@ function init() {
 
 function repeatedQuestion() {
 
-    inquirer.prompt(initialQuestion)
-        .then(response => {
-            console.log(response);
+    inquirer.prompt(initialQuestion).then(response => {
 
+        const questionSelected = response.initial_question;
+        switch (questionSelected) {
 
-            if (response.initial_question == 'Add Department') {
-                inquirer.prompt(addDepartmentQuestion)
-                    .then(response => {
+            case 'Add Department':
+                addDepartment();
+                break;
+            case 'Add Role':
+                addRole();
+                break;
+            case 'Add Employee':
+                addEmployee();
+                break;
+            case 'View Departments':
+                viewDepartments();
+                break;
+            case 'View Roles':
+                viewRoles();
+                break;
+            case 'View Employees':
+                viewEmployees();
+                break;
+            case 'Update Role':
+                updatRole();
+                break;
+            default:
+                console.log(`Sorry, we are out of`);
+        }
 
-                        const department = new Department(
-                            response.department_name);
-                        newDepartmentList.push(department);
-                        console.log(newDepartmentList);
+    });
 
-                        //Query database
-                        db.query('INSERT INTO departments (name) VALUES (?)', response.department_name, function (err, results) {
-                            if (err) {
-                                console.log(err);
-                            }
-                            console.log(results);
-                        });
-
-
-                        repeatedQuestion();
-
-                    });
-
-            } else if (response.initial_question == 'Add Roles') {
-
-                db.query('SELECT id AS value, name FROM departments').then()
-
-
-                inquirer.prompt(addRoleQuestion)
-                    .then(response => {
-
-                        const role = new Role(
-                            response.role_name,
-                            response.role_salary,
-                            response.role_department);
-                        newRoleList.push(role);
-
-                        //Query database
-                        db.query(`INSERT INTO roles(title,salary ) VALUES (${response.role_name}, ${response.role_salary}), `, function (err, results) {
-                            if (err) {
-                                console.log(err);
-                            }
-                            console.log(results);
-                        });
-
-
-                        repeatedQuestion();
-                    });
-
-
-
-
-            } else if (response.initial_question == 'Add Employee') {
-
-                inquirer.prompt(addEmployeeQuestion)
-                    .then(response => {
-
-                        const employee = new Employee(
-                            response.employee_first_name,
-                            response.employee_last_name,
-                            response.employee_role,
-                            response.employee_manager);
-                        newEmployeeList.push(employee);
-
-
-                        //Query database
-                        db.query(`INSERT INTO roles(first_name,last_name ) VALUES (${response.employee_first_name}, ${response.employee_last_name}, ), `, function (err, results) {
-                            if (err) {
-                                console.log(err);
-                            }
-                            console.log(results);
-                        });
-
-
-
-
-                        repeatedQuestion();
-                    });
-
-
-            } else if (response.initial_question == 'Update Employee Role') {
-
-
-
-                repeatedQuestion();
-
-            } else if (response.initial_question == 'View All Departments') {
-
-                //Query database
-                db.query(`SELECT * FROM departments) `, function (err, results) {
-                    if (err) {
-                        console.log(err);
-                    }
-                    console.log(results);
-                });
-
-
-                repeatedQuestion();
-
-
-
-            } else if (response.initial_question == 'View All Roles') {
-
-
-
-                //Query database
-                db.query(`SELECT * FROM roles) `, function (err, results) {
-                    if (err) {
-                        console.log(err);
-                    }
-                    console.log(results);
-                });
-
-
-                repeatedQuestion();
-
-
-            } else if (response.initial_question == 'View All Employees') {
-
-
-                //Query database
-                db.query(`SELECT * FROM employees) `, function (err, results) {
-
-                    if (err) {
-                        console.log(err);
-                    }
-                    console.log(results);
-                });
-
-                repeatedQuestion();
-
-            } else if (response.initial_question == 'Quit') {
-
-
-                return;
-
-
-                //                 console.log(employeeArray.length);
-                //                 writeToFile("./dist/index.html", employeeArray);
-
-            }
-
-
-
-
-        })
 
 
 
 }
+
+
+
+
+
+
+
+function addDepartment() {
+
+    inquirer.prompt(addDepartmentQuestion)
+        .then(response => {
+
+            // console.log(response.department_name);
+
+            //Query database
+            db.query('INSERT INTO departments (name) VALUES (?)', response.department_name, function (err, results) {
+                if (err) {
+                    console.log(err);
+                }
+                console.log(results);
+            });
+
+
+        });
+
+};
+
+
+function addRole() {
+
+    // db.query('SELECT id AS value, name FROM departments').then()
+
+    inquirer.prompt(addRoleQuestion)
+        .then(response => {
+
+
+            console.log(response.role_name, response.role_salary, response.role_department);
+
+            //Query database
+            db.query('INSERT INTO roles (title,salary) VALUES (?)', response.role_name, response.role_salary, response.role_department, function (err, results) {
+                if (err) {
+                    console.log(err);
+                }
+                console.log(results);
+            });
+
+        });
+
+}
+
+
+
+function addEmployee() {
+
+    inquirer.prompt(addEmployeeQuestion)
+        .then(response => {
+
+
+            console.log(response.employee_first_name, response.employee_last_name, response.employee_last_name, response.employee_role, response.employee_manager);
+
+
+            //Query database
+            db.query('INSERT INTO roles(first_name,last_name ) VALUES (?)', response.employee_first_name, response.employee_last_name, response.employee_last_name, response.employee_role, response.employee_manager, function (err, results) {
+                if (err) {
+                    console.log(err);
+                }
+                console.log(results);
+            });
+
+
+
+            repeatedQuestion();
+        });
+
+
+}
+
+
+function updatRole() {
+
+
+
+
+}
+
+
+
+function viewDepartments() {
+
+    //Query database
+    db.query(`SELECT * FROM departments) `, function (err, results) {
+        if (err) {
+            console.log(err);
+        }
+        console.log(results);
+    });
+
+
+}
+
+
+function viewRoles() {
+
+
+    //Query database
+    db.query(`SELECT * FROM roles) `, function (err, results) {
+        if (err) {
+            console.log(err);
+        }
+        console.log(results);
+    });
+
+
+}
+
+
+
+function viewEmployees() {
+
+    //Query database
+    db.query(`SELECT * FROM employees) `, function (err, results) {
+
+        if (err) {
+            console.log(err);
+        }
+        console.log(results);
+    });
+
+
+
+}
+
+
+
+function quit() {
+
+    return;
+
+
+}
+
+
+
 
 init();
 
