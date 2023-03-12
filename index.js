@@ -43,33 +43,33 @@ const addDepartmentQuestion = [
 
 ]
 
-const addRoleQuestion = [
+// const addRoleQuestion = [
 
-    {
-        type: 'input',
-        message: "What is the name of the role?",
-        name: 'role_name',
+//     {
+//         type: 'input',
+//         message: "What is the name of the role?",
+//         name: 'role_name',
 
-    },
+//     },
 
-    {
-        type: 'input',
-        message: "What is the salary of the role?",
-        name: 'role_salary',
+//     {
+//         type: 'input',
+//         message: "What is the salary of the role?",
+//         name: 'role_salary',
 
-    },
+//     },
 
-    {
-        type: 'list',
-        message: "Which department does the role belong to?",
-        choices: ["Engineering", "Finances", "Legal", "Sales"],
-        name: 'role_department',
+//     {
+//         type: 'list',
+//         message: "Which department does the role belong to?",
+//         choices: departments,
+//         name: 'role_department',
 
-    }
+//     }
 
 
 
-]
+// ]
 
 const addEmployeeQuestion = [
 
@@ -187,7 +187,7 @@ function addDepartment() {
             // console.log(response.department_name);
 
             //Query database
-            db.query('INSERT INTO departments (name) VALUES (?)', response.department_name, function (err, results) {
+            db.query(`INSERT INTO departments (name) VALUES (?)`, response.department_name, function (err, results) {
                 if (err) {
                     console.log(err);
                 }
@@ -199,28 +199,85 @@ function addDepartment() {
 
 };
 
+var departments = [];
 
 function addRole() {
 
-    // db.query('SELECT id AS value, name FROM departments').then()
-
-    inquirer.prompt(addRoleQuestion)
-        .then(response => {
 
 
-            console.log(response.role_name, response.role_salary, response.role_department);
+    db.query(`SELECT id, name AS title FROM departments`, function (err, results) {
+        if (err) {
+            console.log(err);
+        }
 
-            //Query database
-            db.query('INSERT INTO roles (title,salary) VALUES (?)', response.role_name, response.role_salary, response.role_department, function (err, results) {
-                if (err) {
-                    console.log(err);
-                }
-                console.log(results);
-            });
+        departments.push(results);
+        console.log(departments);
 
+        var finalDepartment = [];
+
+        for (let i = 0; i < departments.length; i++) {
+
+            finalDepartment += departments[i].toString();
+
+            console.log(finalDepartment);
+        }
+
+
+    });
+
+
+};
+
+
+
+const addRoleQuestion = [
+
+
+    {
+        type: 'input',
+        message: "What is the name of the role?",
+        name: 'role_name',
+
+    },
+
+    {
+        type: 'input',
+        message: "What is the salary of the role?",
+        name: 'role_salary',
+
+    },
+
+    {
+        type: 'list',
+        message: "Which department does the role belong to?",
+        choices: departments,
+        name: 'role_department',
+
+    }
+
+
+
+]
+
+
+
+inquirer.prompt(addRoleQuestion)
+    .then(response => {
+
+
+        console.log(response.role_name, response.role_salary, response.role_department);
+
+        //Query database
+        db.query('INSERT INTO roles (title,salary) VALUES (?)', response.role_name, response.role_salary, response.role_department, function (err, results) {
+            if (err) {
+                console.log(err);
+            }
+            console.log(results);
         });
 
-}
+    });
+
+
 
 
 
@@ -262,7 +319,7 @@ function updatRole() {
 function viewDepartments() {
 
     //Query database
-    db.query(`SELECT * FROM departments) `, function (err, results) {
+    db.query('SELECT * FROM departments', function (err, results) {
         if (err) {
             console.log(err);
         }
