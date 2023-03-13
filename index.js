@@ -79,20 +79,17 @@ function repeatedQuestion() {
             case 'Update Employee Role':
                 updatRole();
                 break;
+            case 'Quit':
+                quit();
+                break;
             default:
-                console.log(`Sorry, we are out of`);
+                console.log(`Sorry, something went wrong! Please try again!`);
         }
 
     });
 
 
-
-
 }
-
-
-
-
 
 
 
@@ -270,10 +267,10 @@ function updatRole() {
 
         console.table(data);
 
-        var employeeChoices = data.map(({ id, first_name }) => ({
+        var employeeChoices = data.map(({ ID, first_name }) => ({
 
             name: first_name,
-            value: id
+            value: ID
 
         }));
 
@@ -282,10 +279,10 @@ function updatRole() {
 
             console.table(data);
 
-            var roleChoices = data.map(({ id, title }) => ({
+            var roleChoices = data.map(({ ID, title }) => ({
 
                 name: title,
-                value: id
+                value: ID
 
             }));
 
@@ -311,20 +308,20 @@ function updatRole() {
 
                     console.log(response);
 
-                    // //Query database
-                    // db.query(`UPDATE employees SET role_id = (?)`, [response_update_employee_role]`WHERE id= (?)`, [response.update_employee], function (err, results) {
-                    //     if (err) {
-                    //         console.log(err);
-                    //     }
-                    //     console.table(results);
-                    //     repeatedQuestion();
-                });
+                    //Query database
+                    db.query(`UPDATE employees SET role_id = ${response.update_employee_role} WHERE id= ${response.update_employee}`, function (err, results) {
+                        if (err) {
+                            console.log(err);
+                        }
+                        console.table(results);
+                        repeatedQuestion();
+                    });
+
+                })
+
 
         })
-
-
     })
-    // })
 
 }
 
